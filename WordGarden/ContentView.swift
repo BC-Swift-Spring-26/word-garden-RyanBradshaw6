@@ -10,13 +10,17 @@ import SwiftUI
 struct ContentView: View {
     @State private var wordsGuessed = 0
     @State private var wordsMissed = 0
-    @State private var wordsToGuess = ["SWIFT","DOG","CAT"]
+    private let wordsToGuess = ["SWIFT","DOG","CAT"]
     @State private var gameStatusMessage: String = "How Many Guesses to Uncover the Hidden Word?"
-    @State private var currentWord = 0
+    @State private var currentWordIndex = 0
     @State private var guessedLetter = ""
     @State private var imageName = "flower8"
     @State private var playAgainHidden = true
     @FocusState private var textFieldIsFocused: Bool
+    @State private var wordToGuess = ""
+    @State private var revealedWord = ""
+    @State private var lettersGuessed = ""
+    
     var body: some View {
         VStack {
             HStack{
@@ -38,7 +42,7 @@ struct ContentView: View {
                 .font(.title)
                 .multilineTextAlignment(.center)
                 .padding()
-            Text("_ _ _ _ _")
+            Text(revealedWord)
                 .font(.title)
             if playAgainHidden {
                 
@@ -64,8 +68,14 @@ struct ContentView: View {
                             guessedLetter = String(lastChar).uppercased()
                         }
                         .focused($textFieldIsFocused)
+                        .onSubmit {
+                            guard guessedLetter != "" else {
+                                return
+                            }
+                            guessALetter()
+                        }
                     Button("Guess a Letter"){
-                        textFieldIsFocused = false
+                        guessALetter()
                     }
                     .buttonStyle(.bordered)
                     .tint(.mint)
@@ -84,7 +94,20 @@ struct ContentView: View {
                 .resizable()
                 .scaledToFit()
         }
+        
         .ignoresSafeArea(edges: .bottom)
+        .onAppear{
+            wordToGuess = wordsToGuess[currentWordIndex]
+            revealedWord = "_" + String(repeating: " _", count: wordToGuess.count-1)
+        }
+    }
+    func guessALetter(){
+        textFieldIsFocused = false
+        lettersGuessed = lettersGuessed + guessedLetter
+        revealedWord = wordToGuess.map{
+            letter in lettersGuessed.contains(letter) ? "\(letter)" : "_"
+        }.joined(separator: " ")
+        guessedLetter = ""
     }
 }
 
